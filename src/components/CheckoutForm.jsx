@@ -1,4 +1,4 @@
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { useStripe, useElements, CardElement, PaymentElement } from "@stripe/react-stripe-js";
 import { useEffect, useState } from "react";
 import axios from 'axios'
 const CheckoutForm = () => {
@@ -18,7 +18,7 @@ const CheckoutForm = () => {
       {headers:{
         "Content-Type": "application/json",
         Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk3NjIyNDMzLCJpYXQiOjE2OTc2MTg4MzMsImp0aSI6IjI0MzIyY2MxMmExZjRhOWViMWM0MjA4NDA4MzFjZGE5IiwidXNlcl9pZCI6MTl9.iFITjVjqAM96iPxBS-t_DA4HJdZn-XfGM4vazNRw-3E",
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk3NjQzNDMzLCJpYXQiOjE2OTc2Mzk4MzMsImp0aSI6ImQwZjM3ZjhkZjgyYzRiZWZhYjA0NDEyODZmOGI1ZWRjIiwidXNlcl9pZCI6MTl9.44wvOa0mClaeClUcvq_p3ptQOj6cbARJvqOTBF4_n40",
       }}
     )
       .then((res) => setPaymentIntent(res.data))
@@ -37,20 +37,28 @@ console.log("payment intent:",paymentIntent)
       return;
     }
     // console.log("payment intent:",paymentIntent)
-    const result = await stripe.confirmPayment({clientSecret:paymentIntent.client_secret}, {
-      elements,
-      confirmParams: {
-        // Return URL where the customer should be redirected after the PaymentIntent is confirmed.
-        return_url: 'https://example.com',
+    const result = await stripe.confirmCardPayment(paymentIntent.client_secret, {
+      // elements,
+      // confirmParams: {
+      //   // Return URL where the customer should be redirected after the PaymentIntent is confirmed.
+      //   return_url: 'https://example.com',
+      // },
+      // redirect: "if_required",
+      payment_method: {
+        card: elements.getElement(CardElement),
+        billing_details: {
+          name: 'Jenny Rosen',
+          email: '9gV9l@example.com',
+          phone: '555-555-5555',
+        },
       },
-      redirect: "if_required",
     });
 
     if (result.error) {
       alert(result.error.message);
       console.log(result.error.message);
     } else {
-      if (paymentResult.paymentIntent.status === "succeeded") {
+      if (result.paymentIntent.status === "succeeded") {
         alert("Success!");
         console.log(result);
       }
